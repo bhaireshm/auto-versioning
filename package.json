@@ -1,10 +1,12 @@
 {
   "name": "auto-versioning",
-  "version": "5.0.1",
+  "version": "5.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "version-patch": "node app.js patch",
+    "version-minor": "node app.js minor",
+    "version-major": "node app.js major"
   },
   "keywords": [],
   "author": "",
