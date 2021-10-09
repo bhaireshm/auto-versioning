@@ -79,7 +79,7 @@ function executeCommand(cmd, path = __dirname) {
 }
 
 function updateVersion() {
-  if (message) message = ` -m "${message}"`;
+  if (message) message = ` -m "${val ? `${version} ` + message : message}"`;
   const cmd = `npm version ${version} --force${message}`;
   // console.log("cmd", cmd);
 
