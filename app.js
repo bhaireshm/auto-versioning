@@ -50,18 +50,15 @@ updatedVersion = Object.values(version).join(".");
 
 const cmd = `npm version --force ${updatedVersion}`;
 executeCommand(cmd)
-  .then((result) => {
-    console.log("Version updated to " + result);
-  })
-  .catch((err) => {
-    console.error(err);
-  });
+  .then((result) => console.log("Version updated to " + result))
+  .catch((err) => console.error(err));
 
 // Private Functions
 function executeCommand(cmd, path = __dirname) {
   return new Promise((resolve, reject) => {
     exec(cmd, { cwd: path }, (err, stdout, stderr) => {
       if (err) return reject(err);
+      if (stderr) return reject(stderr);
       return resolve(stdout);
     });
   });
