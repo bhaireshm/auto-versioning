@@ -1,15 +1,8 @@
-const { exit } = require("process");
-const { readFileSync } = require("fs");
-const { exec } = require("child_process");
-
-const patchMaxValue = 99;
-const minorMaxValue = 99;
-
 // * Read arguments
 const args = process.argv.slice(2);
 if (args.length <= 0) {
   console.error(new Error("Argument is required."));
-  exit(-1);
+  require("process").exit(-1);
 }
 
 const arg = args[0];
@@ -27,9 +20,11 @@ let version;
 
 if (val) {
   // * Import package.json
-  const packageFile = JSON.parse(readFileSync("package.json", "utf-8"));
+  const packageFile = JSON.parse(require("fs").readFileSync("package.json", "utf-8"));
 
   // * Read package.json
+  const patchMaxValue = 99;
+  const minorMaxValue = 99;
   const currVersion = packageFile.version;
   const versionObj = {
     major: +currVersion.split(".")[0],
@@ -76,7 +71,7 @@ updateVersion();
 // Private Functions
 function executeCommand(cmd, path = __dirname) {
   return new Promise((resolve, reject) => {
-    exec(cmd, { cwd: path }, (err, stdout, stderr) => {
+    require("child_process").exec(cmd, { cwd: path }, (err, stdout, stderr) => {
       if (err) return reject(err);
       return resolve(stdout, stderr);
     });
