@@ -2,76 +2,97 @@ const { exit } = require("process");
 const { readFileSync } = require("fs");
 const { exec } = require("child_process");
 
-const patchMaxValue = 9;
-const minorMaxValue = 9;
+const patchMaxValue = 99;
+const minorMaxValue = 99;
 
 // * Read arguments
 const args = process.argv.slice(2);
-const arg = args[0];
-const val = +args[1] || false;
-
-if (args.length === 0) {
+if (args.length <= 0) {
   console.error(new Error("Argument is required."));
   exit(-1);
 }
 
-// * Import package.json
-const packageFile = JSON.parse(readFileSync("package.json", "utf-8"));
+const arg = args[0];
+const val = new RegExp(/^[0-9]*$/).test(args[1]) ? args[1] : false;
+const msgStartIndex = val ? 2 : 1;
+let message = args.slice(msgStartIndex, args.length - 1);
+message = message.length > 0 ? message.join(" ") : "";
 
-// * Read package.json
-const currVersion = packageFile.version;
-const version = {
-  major: +currVersion.split(".")[0],
-  minor: +currVersion.split(".")[1],
-  patch: +currVersion.split(".")[2],
-};
-let updatedVersion;
+// console.log("args", args);
+// console.log("arg", arg);
+// console.log("val", val);
+// console.log("msg", message);
 
-// * Increment Version
-switch (arg) {
-  case "patch":
-    version.patch = val ? val : version.patch + 1;
-    break;
-  case "minor":
-    version.minor = val ? val : version.minor + 1;
-    break;
-  case "major":
-    version.major = val ? val : version.major + 1;
-    break;
-  default:
-    break;
+let version;
+
+if (val) {
+  // * Import package.json
+  const packageFile = JSON.parse(readFileSync("package.json", "utf-8"));
+
+  // * Read package.json
+  const currVersion = packageFile.version;
+  const versionObj = {
+    major: +currVersion.split(".")[0],
+    minor: +currVersion.split(".")[1],
+    patch: +currVersion.split(".")[2],
+  };
+
+  // * Increment Version
+  switch (arg) {
+    case "patch":
+      versionObj.patch = val ? val : versionObj.patch + 1;
+      break;
+    case "minor":
+      versionObj.patch = 0;
+      versionObj.minor = val ? val : versionObj.minor + 1;
+      break;
+    case "major":
+      versionObj.patch = 0;
+      versionObj.minor = 0;
+      versionObj.major = val ? val : versionObj.major + 1;
+      break;
+    default:
+      break;
+  }
+
+  // * Check for versions
+  if (versionObj.patch > patchMaxValue) {
+    versionObj.patch = 0;
+    ++versionObj.minor;
+  }
+  if (versionObj.minor > minorMaxValue) {
+    versionObj.minor = 0;
+    ++versionObj.major;
+  }
+
+  version = Object.values(versionObj).join(".");
+} else {
+  version = arg;
 }
 
-// * Check for versions
-checkAndUpdateSiblings();
-
 // * Execute Command
-updatedVersion = Object.values(version).join(".");
-
-const cmd = `npm version --force ${updatedVersion}`;
-executeCommand(cmd)
-  .then((result) => console.log("Version updated to " + result))
-  .catch((err) => console.error(err));
+updateVersion();
 
 // Private Functions
 function executeCommand(cmd, path = __dirname) {
   return new Promise((resolve, reject) => {
     exec(cmd, { cwd: path }, (err, stdout, stderr) => {
       if (err) return reject(err);
-      if (stderr) return reject(stderr);
-      return resolve(stdout);
+      return resolve(stdout, stderr);
     });
   });
 }
 
-function checkAndUpdateSiblings() {
-  if (version.patch > patchMaxValue) {
-    version.patch = 0;
-    ++version.minor;
-  }
+function updateVersion() {
+  if (message) message = ` -m "${message}"`;
+  const cmd = `npm version ${version} --force${message}`;
+  // console.log("cmd", cmd);
 
-  if (version.minor > minorMaxValue) {
-    version.minor = 0;
-    ++version.major;
-  }
+  // npm version [<newversion> | major | minor | patch | premajor | preminor | prepatch | prerelease [--preid=<prerelease-id>] | from-git] --force -m "message"
+  executeCommand(cmd)
+    .then((result, stderr) => {
+      if (stderr) console.log(stderr);
+      console.log(`\nVersion updated to ${result}`);
+    })
+    .catch((err) => console.log(err));
 }
