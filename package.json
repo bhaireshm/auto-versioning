@@ -1,6 +1,6 @@
 {
   "name": "auto-versioning",
-  "version": "5.2.9",
+  "version": "5.2.3",
   "description": "",
   "main": "index.js",
   "scripts": {
