@@ -69,14 +69,14 @@ if (val) {
 updateVersion();
 
 // Private Functions
-// function executeCommand(cmd, path = __dirname) {
-//   return new Promise((resolve, reject) => {
-//     require("child_process").exec(cmd, { cwd: path }, (err, stdout, stderr) => {
-//       if (err) return reject(err);
-//       return resolve(stdout, stderr);
-//     });
-//   });
-// }
+function executeCommand(cmd, path = __dirname) {
+  return new Promise((resolve, reject) => {
+    require("child_process").exec(cmd, { cwd: path }, (err, stdout, stderr) => {
+      if (err) return reject(err);
+      return resolve(stdout, stderr);
+    });
+  });
+}
 
 function updateVersion() {
   if (message) message = ` -m "${val ? `${version} ` + message : message}"`;
@@ -84,16 +84,10 @@ function updateVersion() {
   // console.log("cmd", cmd);
 
   // npm version [<newversion> | major | minor | patch | premajor | preminor | prepatch | prerelease [--preid=<prerelease-id>] | from-git] --force -m "message"
-  // executeCommand(cmd)
-  //   .then((result, stderr) => {
-  //     if (stderr) console.log(stderr);
-  //     console.log(`\nVersion updated to ${result}`);
-  //   })
-  //   .catch((err) => console.log(err));
-
-  require("child_process").exec(cmd, { cwd: __dirname }, (err, stdout, stderr) => {
-    if (err) console.log(new Error(err));
-    console.log(`Version updated to ${stdout}`);
-    if (stderr) console.log(stderr);
-  });
+  executeCommand(cmd)
+    .then((result, stderr) => {
+      if (stderr) console.log(stderr);
+      console.log(`Version updated to ${result}`);
+    })
+    .catch((err) => console.log(err));
 }
