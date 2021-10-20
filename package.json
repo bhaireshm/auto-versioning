@@ -1,12 +1,13 @@
 {
   "name": "auto-versioning",
-  "version": "7.23.30",
+  "version": "8.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "version-patch": "node app.js patch",
     "version-minor": "node app.js minor",
-    "version-major": "node app.js major"
+    "version-major": "node app.js major",
+    "build": "npm run version-major && npm run version-patch 5"
   },
   "keywords": [],
   "author": "",
